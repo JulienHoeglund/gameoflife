@@ -46,12 +46,13 @@ class Grid{
 		int X;
 		int Y;
 		int length;
+		int s;
 		Cell * cells;
 		bool * neighbors;
 		sf::RenderWindow window;
 	public:
-	Grid(int x, int y)
-	:X(x),Y(y){
+	Grid(int x, int y, int size)
+	:X(x),Y(y),s(size){
 		length=X*Y;
 		cells=new Cell[length];
 		neighbors=new bool[length];
@@ -74,7 +75,7 @@ class Grid{
 		}
 	}
 	void draw(){
-		sf::RectangleShape rect(sf::Vector2f(50,50));
+		sf::RectangleShape rect(sf::Vector2f(s,s));
 		for(int j=0;j<length;j++){
 			if(cells[j].getState()==1){
 				rect.setFillColor(sf::Color(100,255,100));
@@ -82,9 +83,7 @@ class Grid{
 			else{
 				rect.setFillColor(sf::Color(0,0,0));
 			}
-			rect.setOutlineThickness(3);
-			rect.setOutlineColor(sf::Color(0,0,255));
-			rect.setPosition((50*(j%X))+350,(50*((j-(j%Y)))/10)+250);
+			rect.setPosition((s*(j%X))+150,(s*((j-(j%Y)))/s)+30);
 			window.draw(rect);
 		}
 		window.display();
@@ -141,13 +140,7 @@ class Grid{
 				}
 			}
 			cells[i].setNeighbors(n);
-			std::cout<<"|"<<std::flush;
-			std::cout<<cells[i].getState()<<std::flush;
-			std::cout<<cells[i].getNeighbors()<<std::flush;
-			if((i+1)%Y==0 && i>0)
-				std::cout<<'\n'<<std::flush;
 		}
-		std::cout<<'\n'<<std::flush;
 	}
 	void update(){
 		for(int i=0;i<length;i++){
@@ -160,7 +153,7 @@ class Grid{
 	}
 	void drawConfig(int hoveredCell, bool * markedCells){
 		window.clear(sf::Color::Black);
-		sf::RectangleShape rect(sf::Vector2f(50,50));
+		sf::RectangleShape rect(sf::Vector2f(s,s));
 		for(int j=0;j<length;j++){
 			if(j==hoveredCell){
 				rect.setFillColor(sf::Color(255,255,255));
@@ -171,9 +164,8 @@ class Grid{
 			else{
 				rect.setFillColor(sf::Color(0,0,0));
 			}
-			rect.setOutlineThickness(3);
-			rect.setOutlineColor(sf::Color(0,0,255));
-			rect.setPosition((50*(j%X))+350,(50*((j-(j%Y)))/10)+250);
+			rect.setPosition((s*(j%X))+150,(s*((j-(j%Y)))/Y)+30);
+			
 			window.draw(rect);
 		}
 		window.display();
@@ -188,19 +180,19 @@ class Grid{
 		while(!leave){
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && hoveredCell>=Y){
 				hoveredCell-=Y;
-				sf::sleep(sf::milliseconds(100));
+				sf::sleep(sf::milliseconds(200));
 			}
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && hoveredCell<(X*Y)-Y){
 				hoveredCell+=Y;
-				sf::sleep(sf::milliseconds(100));
+				sf::sleep(sf::milliseconds(200));
 			}
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && hoveredCell>0){
 				hoveredCell-=1;
-				sf::sleep(sf::milliseconds(100));
+				sf::sleep(sf::milliseconds(200));
 			}
 			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (hoveredCell%Y)<Y){
 				hoveredCell+=1;
-				sf::sleep(sf::milliseconds(100));
+				sf::sleep(sf::milliseconds(200));
 			}
 			drawConfig(hoveredCell,markedCells);
 	
@@ -225,7 +217,7 @@ class Grid{
 				config();
 				running=true;
 			}
-			sf::sleep(sf::milliseconds(1000));
+			sf::sleep(sf::milliseconds(200));
 			while(window.pollEvent(event)){
 				if(event.type==sf::Event::Closed)
 					window.close();
@@ -242,9 +234,10 @@ class Grid{
 
 };
 int main(){
-	int X = 10;
-	int Y = 10;
-	Grid grid(X,Y);
+	int X = 30;
+	int Y = 30;
+	int s = 30;
+	Grid grid(X,Y,s);
 	grid.run();
 		
 	return 0;
