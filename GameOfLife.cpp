@@ -74,7 +74,7 @@ class Grid{
 				neighbors[j]=false;
 		}
 	}
-	void draw(){
+	void draw(bool running, int hoveredCell, bool * markedCells){
 		sf::RectangleShape rect(sf::Vector2f(s,s));
 		for(int j=0;j<length;j++){
 			if(cells[j].getState()==1){
@@ -83,11 +83,17 @@ class Grid{
 			else{
 				rect.setFillColor(sf::Color(0,0,0));
 			}
+			if(!running && j==hoveredCell){
+				rect.setFillColor(sf::Color(255,255,255));
+			}
+			else if(!running && markedCells[j]==true){
+				rect.setFillColor(sf::Color(0,0,255));
+			}
 			rect.setPosition((s*(j%X))+150,(s*((j-(j%Y)))/s)+30);
 			window.draw(rect);
 		}
 		window.display();
-	} 
+	}
 	void countNeighbors(){
 		int n,p;	
 		for(int i=0;i<length;i++){
@@ -151,85 +157,69 @@ class Grid{
 			}
 		}
 	}
-	void drawConfig(int hoveredCell, bool * markedCells){
-		window.clear(sf::Color::Black);
-		sf::RectangleShape rect(sf::Vector2f(s,s));
-		for(int j=0;j<length;j++){
-			if(j==hoveredCell){
-				rect.setFillColor(sf::Color(255,255,255));
-			}
-			else if(markedCells[j]==true){
-				rect.setFillColor(sf::Color(0,0,255));
-			}
-			else{
-				rect.setFillColor(sf::Color(0,0,0));
-			}
-			rect.setPosition((s*(j%X))+150,(s*((j-(j%Y)))/Y)+30);
-			
-			window.draw(rect);
-		}
-		window.display();
-	} 
-	void config(){
-		bool leave=false;
+	void run(){		
+		bool running=false;
+		bool hold=false;
 		int hoveredCell=0;
 		bool markedCells[length]={0};
-		for(int i=0;i<length;i++){
-			markedCells[i]=false;
-		}
-		while(!leave){
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && hoveredCell>=Y){
-				hoveredCell-=Y;
-				sf::sleep(sf::milliseconds(200));
-			}
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && hoveredCell<(X*Y)-Y){
-				hoveredCell+=Y;
-				sf::sleep(sf::milliseconds(200));
-			}
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && hoveredCell>0){
-				hoveredCell-=1;
-				sf::sleep(sf::milliseconds(200));
-			}
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (hoveredCell%Y)<Y){
-				hoveredCell+=1;
-				sf::sleep(sf::milliseconds(200));
-			}
-			drawConfig(hoveredCell,markedCells);
-	
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-				markedCells[hoveredCell]=true;
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-				markedCells[hoveredCell]=false;
-			if(sf::Keyboard::isKeyPressed(sf::Keyboard::N)){
-				leave=true;
-			}
-		}
-		for(int i=0;i<length;i++){
-			if(markedCells[i]==true)
-				cells[i].setAlive();
-		}				
-	}
-	void run(){		
-		bool running=false;		
+			
 		while(window.isOpen()){
 			sf::Event event;
-			if(!running){
-				config();
-				running=true;
-			}
-			sf::sleep(sf::milliseconds(200));
 			while(window.pollEvent(event)){
-				if(event.type==sf::Event::Closed)
-					window.close();
+				if(event.type==sf::Event::KeyPressed){
+					if(event.type==sf::Event::Closed)
+						window.close();
+					if(!running){
+						if(event.key.code==sf::Keyboard::Up){
+							hoveredCell-=Y;
+						}
+						if(event.key.code==sf::Keyboard::Down){
+							hoveredCell+=Y;
+						}
+						if(event.key.code==sf::Keyboard::Left){
+							hoveredCell-=1;
+						}
+						if(event.key.code==sf::Keyboard::Right){
+							hoveredCell+=1;
+						}
+						if(event.key.code==sf::Keyboard::A || hold){
+							markedCells[hoveredCell]=true;
+							hold=true;
+						}
+						if(event.key.code==sf::Keyboard::X){
+							markedCells[hoveredCell]=false;
+						}
+						if(event.key.code==sf::Keyboard::N){
+							running=true;
+						}
+					}
+					else if(event.key.code==sf::Keyboard::N){
+						running=false;
+					}
+				}
+				else if(event.type==sf::Event::KeyReleased && event.key.code==sf::Keyboard::A){
+					hold=false;
+				}
 			}
 			window.clear(sf::Color::Black);
+			draw(running,hoveredCell,markedCells);
 			if(running){
+				sf::sleep(sf::milliseconds(400));
 				countNeighbors();
 				process();
 				update();
 			}
-			draw();
-		}
+			else{
+				for(int i=0;i<length;i++){
+					if(markedCells[i]==true){
+						cells[i].setAlive();
+					}
+					else if(markedCells[i]==false){
+						cells[i].setDead();	
+					}
+				}
+			}
+			}
 	}
 
 };
