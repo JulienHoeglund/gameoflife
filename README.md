@@ -1,7 +1,7 @@
 # Game of Life
 Game of life made with C++ and the Simple and Fast Media Library (SFML).
 
-##Instructions
+## Instructions
 ```bash
 ./GameOfLife
 ```
